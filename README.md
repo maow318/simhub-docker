@@ -15,7 +15,7 @@ Copy this configuration into your NAS Compose editor, or save it as `compose.yam
 ```yaml
 services:
   simhub:
-    image: ghcr.io/maow318/simhub-docker:0.4.9-secure1
+    image: ghcr.io/maow318/simhub-docker:0.4.9-secure2
     platform: linux/amd64
     pull_policy: missing
     container_name: simhub-nas
@@ -54,6 +54,22 @@ Availability outside mainland China is not universal: local law, applicable sanc
 - A valid SIMHub license and an internet connection are required for activation and periodic license validation. A lifetime license does **not** mean permanently offline operation; its scope is defined in the official terms.
 - Keep your persistent data directory and back it up before updates. Do not expose an unconfigured management interface to the public internet.
 - Confirm hardware and carrier compatibility before relying on any feature. No claim of compatibility with every NAS, SIM, reader or carrier is made.
+
+### Upgrade to 0.4.9-secure2
+
+**Upgrade before the v2 license-trust cutover.** `0.4.9-secure1` cannot read the new trust format. The production cutover is currently pending the upgrade of existing devices. After cutover, the operator no longer needs to renew the signed public-key list every month; normal online license checks, annual expiry and refund/revocation enforcement remain.
+
+For an existing installation, stop the old instance and back up its data. Keep the same Compose project directory and the exact existing `/data` mount (`./data` in this example); change only the image tag to `0.4.9-secure2`. Then run:
+
+```bash
+docker compose pull
+```
+
+```bash
+docker compose up -d
+```
+
+Confirm the application reports `0.4.9-secure2` and the existing license remains active. Do not delete the data directory, use volume-removal options or start a second instance against the same data. Once v2 trust has been accepted, do not downgrade to secure1 or restore an older trust cache.
 
 ### Quick installation
 
@@ -105,6 +121,22 @@ SIMHub NAS は、NAS 上の Web インターフェースから対応する SIM�
 - 永続データディレクトリを保持し、更新前にバックアップしてください。初期設定が済んでいない管理画面をインターネットに公開しないでください。
 - 利用前に機器・通信事業者との互換性を確認してください。すべての NAS、SIM、リーダー、通信事業者への対応を保証するものではありません。
 
+### 0.4.9-secure2 への更新
+
+**ライセンス信頼リストが v2 に切り替わる前に更新してください。** `0.4.9-secure1` は新形式に対応していません。本番の切り替えは現在、既存端末の更新待ちです。切り替え後は運営者による署名付き公開鍵リストの毎月の更新が不要になりますが、通常のオンライン認証、年額ライセンスの有効期限、返金・取り消しの確認は継続します。
+
+既存環境では、旧インスタンスを停止してデータをバックアップします。同じ Compose プロジェクトのディレクトリと既存の `/data` マウント先（この例では `./data`）を保持し、イメージタグだけを `0.4.9-secure2` に変更して実行してください。
+
+```bash
+docker compose pull
+```
+
+```bash
+docker compose up -d
+```
+
+アプリのバージョンが `0.4.9-secure2` で、既存ライセンスが有効なことを確認してください。データの削除、ボリュームを削除するオプションの使用、同じデータでの二重起動は避けてください。v2 を受け入れた後は secure1 へのダウングレードや古い信頼キャッシュの復元をしないでください。
+
 ### 簡単なインストール手順
 
 1. fnOS の **Docker → Compose → プロジェクト追加**で新しいプロジェクト名と専用フォルダーを指定します。**docker-compose.yml を作成**を選び、上記の設定を貼り付けて起動します。他の NAS では対応する Compose エディターを利用してください。
@@ -154,6 +186,22 @@ SIMHub NAS — программное обеспечение для самост
 - Требуется действующая лицензия SIMHub. Для активации и периодической проверки лицензии необходимо подключение к интернету. Бессрочная лицензия **не** означает бессрочную автономную работу; её условия определяются официальными условиями использования.
 - Сохраняйте каталог постоянных данных и создавайте резервную копию перед обновлением. Не открывайте доступ к ненастроенному интерфейсу управления из интернета.
 - Перед использованием убедитесь в совместимости оборудования и оператора. Совместимость со всеми NAS, SIM-картами, считывателями и операторами не гарантируется.
+
+### Обновление до 0.4.9-secure2
+
+**Обновите программу до перехода на список доверенных ключей v2.** Версия `0.4.9-secure1` не поддерживает новый формат. Переключение рабочего сервера пока ожидает обновления существующих устройств. После перехода оператору больше не потребуется ежемесячно продлевать подписанный список открытых ключей; обычные онлайн-проверки лицензий, срок годовой лицензии и проверки возвратов и отзыва сохраняются.
+
+При обновлении существующей установки остановите старый экземпляр и создайте резервную копию данных. Сохраните прежний каталог проекта Compose и точное подключение существующего каталога `/data` (в этом примере — `./data`); измените только тег образа на `0.4.9-secure2`. Затем выполните:
+
+```bash
+docker compose pull
+```
+
+```bash
+docker compose up -d
+```
+
+Убедитесь, что приложение показывает версию `0.4.9-secure2`, а существующая лицензия остаётся активной. Не удаляйте данные, не используйте параметры удаления томов и не запускайте второй экземпляр с теми же данными. После принятия списка v2 не возвращайтесь к secure1 и не восстанавливайте старый кэш доверенных ключей.
 
 ### Быстрая установка
 
