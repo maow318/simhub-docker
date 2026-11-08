@@ -1,0 +1,15 @@
+services:
+  simhub:
+    image: ghcr.io/maow318/simhub-docker:0.4.9-secure1
+    platform: linux/amd64
+    pull_policy: missing
+    container_name: simhub-nas
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./data:/data
+      - /dev/bus/usb:/dev/bus/usb
+    device_cgroup_rules:
+      - "c 189:* rmw"
+    environment:
+      TZ: "${TZ:-UTC}"
