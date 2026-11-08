@@ -57,7 +57,7 @@ Availability outside mainland China is not universal: local law, applicable sanc
 
 ### Upgrade to 0.4.9-secure2
 
-**Upgrade before the v2 license-trust cutover.** `0.4.9-secure1` cannot read the new trust format. The production cutover is currently pending the upgrade of existing devices. After cutover, the operator no longer needs to renew the signed public-key list every month; normal online license checks, annual expiry and refund/revocation enforcement remain.
+**Upgrade before the v2 license-trust cutover.** `0.4.9-secure1` cannot read the new trust format. Production switched to v2 on 8 November 2026. Existing secure1 installations must upgrade to secure2. After cutover, the operator no longer needs to renew the signed public-key list every month; normal online license checks, annual expiry and refund/revocation enforcement remain.
 
 For an existing installation, stop the old instance and back up its data. Keep the same Compose project directory and the exact existing `/data` mount (`./data` in this example); change only the image tag to `0.4.9-secure2`. Then run:
 
@@ -123,7 +123,7 @@ SIMHub NAS は、NAS 上の Web インターフェースから対応する SIM�
 
 ### 0.4.9-secure2 への更新
 
-**ライセンス信頼リストが v2 に切り替わる前に更新してください。** `0.4.9-secure1` は新形式に対応していません。本番の切り替えは現在、既存端末の更新待ちです。切り替え後は運営者による署名付き公開鍵リストの毎月の更新が不要になりますが、通常のオンライン認証、年額ライセンスの有効期限、返金・取り消しの確認は継続します。
+**ライセンス信頼リストが v2 に切り替わる前に更新してください。** `0.4.9-secure1` は新形式に対応していません。本番環境は2026年11月8日に v2 へ切り替わりました。既存の secure1 は secure2 へ更新してください。切り替え後は運営者による署名付き公開鍵リストの毎月の更新が不要になりますが、通常のオンライン認証、年額ライセンスの有効期限、返金・取り消しの確認は継続します。
 
 既存環境では、旧インスタンスを停止してデータをバックアップします。同じ Compose プロジェクトのディレクトリと既存の `/data` マウント先（この例では `./data`）を保持し、イメージタグだけを `0.4.9-secure2` に変更して実行してください。
 
@@ -189,7 +189,7 @@ SIMHub NAS — программное обеспечение для самост
 
 ### Обновление до 0.4.9-secure2
 
-**Обновите программу до перехода на список доверенных ключей v2.** Версия `0.4.9-secure1` не поддерживает новый формат. Переключение рабочего сервера пока ожидает обновления существующих устройств. После перехода оператору больше не потребуется ежемесячно продлевать подписанный список открытых ключей; обычные онлайн-проверки лицензий, срок годовой лицензии и проверки возвратов и отзыва сохраняются.
+**Обновите программу до перехода на список доверенных ключей v2.** Версия `0.4.9-secure1` не поддерживает новый формат. Рабочий сервер перешёл на v2 8 ноября 2026 года. Существующие установки secure1 необходимо обновить до secure2. После перехода оператору больше не потребуется ежемесячно продлевать подписанный список открытых ключей; обычные онлайн-проверки лицензий, срок годовой лицензии и проверки возвратов и отзыва сохраняются.
 
 При обновлении существующей установки остановите старый экземпляр и создайте резервную копию данных. Сохраните прежний каталог проекта Compose и точное подключение существующего каталога `/data` (в этом примере — `./data`); измените только тег образа на `0.4.9-secure2`. Затем выполните:
 
