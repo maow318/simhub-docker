@@ -6,6 +6,34 @@
 
 ---
 
+## Docker Compose
+
+[Download / ダウンロード / Скачать compose.yaml](compose.yaml)
+
+Copy this configuration into your NAS Compose editor, or save it as `compose.yaml` in a dedicated project directory. / NAS の Compose エディターに貼り付けるか、専用ディレクトリに `compose.yaml` として保存してください。 / Вставьте конфигурацию в редактор Compose на NAS или сохраните её как `compose.yaml` в отдельном каталоге проекта.
+
+```yaml
+services:
+  simhub:
+    image: ghcr.io/maow318/simhub-docker:0.4.9-secure1
+    platform: linux/amd64
+    pull_policy: missing
+    container_name: simhub-nas
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./data:/data
+      - /dev/bus/usb:/dev/bus/usb
+    device_cgroup_rules:
+      - "c 189:* rmw"
+    environment:
+      TZ: "${TZ:-UTC}"
+```
+
+Linux amd64 only. / Linux amd64 のみ。 / Только Linux amd64.
+
+---
+
 ## English
 
 ### About SIMHub NAS
@@ -26,6 +54,23 @@ Availability outside mainland China is not universal: local law, applicable sanc
 - A valid SIMHub license and an internet connection are required for activation and periodic license validation. A lifetime license does **not** mean permanently offline operation; its scope is defined in the official terms.
 - Keep your persistent data directory and back it up before updates. Do not expose an unconfigured management interface to the public internet.
 - Confirm hardware and carrier compatibility before relying on any feature. No claim of compatibility with every NAS, SIM, reader or carrier is made.
+
+### Quick installation
+
+1. In fnOS, open **Docker → Compose → Add project**. Choose a new project name and a dedicated folder, select **Create docker-compose.yml**, and paste the configuration above. Start the project. Other NAS systems can use their equivalent Compose editor.
+2. For command-line installation, save [compose.yaml](compose.yaml), open a terminal in its directory and run:
+
+```bash
+docker compose up -d
+```
+
+3. Open `http://<NAS-LAN-IP>:8080` (replace the placeholder with your NAS address), set your own administrator password and activate with your own SIMHub license key. Browser calling requires HTTPS, normally `https://<NAS-LAN-IP>:8443`, and microphone permission. Verify the NAS address before trusting its self-signed certificate.
+
+**Before starting:** use a supported USB device, ensure `/dev/bus/usb` exists on the NAS, and keep ports **8080 and 8443** free. Host networking is intentional; no `ports:` mapping is needed. Set `TZ` to your local IANA time zone if desired; the default is UTC. Do not run two SIMHub instances against the same data or USB devices.
+
+**Data and updates:** `./data` is stored alongside the Compose file. Keep and back up this directory. This example is for a new installation; do not point an existing deployment at an empty directory by mistake. Updates are manual: review the release notes, back up data, stop the old instance, change the image tag to the intended release, then run `docker compose pull` and `docker compose up -d`. The fixed tag does not automatically track future versions.
+
+**Download errors:** if GHCR returns `unauthorized` or `denied`, the image may not yet be publicly accessible. Contact support; end users should never need the publisher's GitHub token. A timeout can instead indicate a network or registry problem.
 
 ### Responsible use and important limitations
 
@@ -60,6 +105,23 @@ SIMHub NAS は、NAS 上の Web インターフェースから対応する SIM�
 - 永続データディレクトリを保持し、更新前にバックアップしてください。初期設定が済んでいない管理画面をインターネットに公開しないでください。
 - 利用前に機器・通信事業者との互換性を確認してください。すべての NAS、SIM、リーダー、通信事業者への対応を保証するものではありません。
 
+### 簡単なインストール手順
+
+1. fnOS の **Docker → Compose → プロジェクト追加**で新しいプロジェクト名と専用フォルダーを指定します。**docker-compose.yml を作成**を選び、上記の設定を貼り付けて起動します。他の NAS では対応する Compose エディターを利用してください。
+2. コマンドラインを使う場合は [compose.yaml](compose.yaml) を保存し、そのディレクトリで実行します。
+
+```bash
+docker compose up -d
+```
+
+3. `http://<NAS-LAN-IP>:8080` の `<NAS-LAN-IP>` を NAS の LAN アドレスに置き換えて開き、自分の管理者パスワードを設定し、自分の SIMHub ライセンスキーで認証します。ブラウザー通話には HTTPS（通常は `https://<NAS-LAN-IP>:8443`）とマイクの許可が必要です。自己署名証明書を信頼する前に NAS のアドレスを確認してください。
+
+**起動前：** 対応 USB デバイスを使用し、NAS に `/dev/bus/usb` が存在すること、ポート **8080 と 8443** が空いていることを確認してください。ホストネットワークを使用するため `ports:` の追加は不要です。`TZ` は地域の IANA タイムゾーンに変更できます（既定値は UTC）。同じデータや USB デバイスを複数の SIMHub で同時に使用しないでください。
+
+**データと更新：** `./data` は Compose ファイルと同じディレクトリ内に作成されます。削除せず、バックアップしてください。この設定は新規導入用です。既存環境を誤って空のデータディレクトリに切り替えないでください。更新は手動です。リリースノートを確認し、バックアップして旧インスタンスを停止し、イメージタグを対象の版に変更してから `docker compose pull` と `docker compose up -d` を実行します。固定タグは将来の版を自動追従しません。
+
+**ダウンロードエラー：** `unauthorized` や `denied` はイメージがまだ一般公開されていない場合にも発生します。サポートへお問い合わせください。利用者が公開者の GitHub トークンを使う必要はありません。タイムアウトはネットワークやレジストリの問題の場合があります。
+
 ### 適切な利用と重要な制限
 
 ご自身が所有するか、管理権限を持つ SIM、eSIM プロファイル、デバイスのみをご利用ください。現地の電気通信・プライバシー・録音関連法令および通信事業者の利用条件を遵守してください。詐欺、迷惑メッセージ、不正な傍受、法令・通信事業者・ライセンス上の制限の回避に利用しないでください。通信料金が発生する場合があります。
@@ -92,6 +154,23 @@ SIMHub NAS — программное обеспечение для самост
 - Требуется действующая лицензия SIMHub. Для активации и периодической проверки лицензии необходимо подключение к интернету. Бессрочная лицензия **не** означает бессрочную автономную работу; её условия определяются официальными условиями использования.
 - Сохраняйте каталог постоянных данных и создавайте резервную копию перед обновлением. Не открывайте доступ к ненастроенному интерфейсу управления из интернета.
 - Перед использованием убедитесь в совместимости оборудования и оператора. Совместимость со всеми NAS, SIM-картами, считывателями и операторами не гарантируется.
+
+### Быстрая установка
+
+1. В fnOS откройте **Docker → Compose → Добавить проект**, задайте новое имя и отдельную папку. Выберите создание `docker-compose.yml`, вставьте конфигурацию выше и запустите проект. На других NAS используйте соответствующий редактор Compose.
+2. Для установки через терминал сохраните [compose.yaml](compose.yaml) и выполните в его каталоге:
+
+```bash
+docker compose up -d
+```
+
+3. Откройте `http://<NAS-LAN-IP>:8080`, заменив `<NAS-LAN-IP>` локальным адресом NAS. Задайте собственный пароль администратора и активируйте программу своим ключом SIMHub. Для звонков в браузере необходимы HTTPS (обычно `https://<NAS-LAN-IP>:8443`) и разрешение на микрофон. Прежде чем доверять самоподписанному сертификату, проверьте адрес NAS.
+
+**Перед запуском:** подключите поддерживаемое USB-устройство, проверьте наличие `/dev/bus/usb` на NAS и доступность портов **8080 и 8443**. Используется сеть хоста, поэтому раздел `ports:` не нужен. При необходимости измените `TZ` на свой часовой пояс IANA; по умолчанию используется UTC. Не запускайте два экземпляра SIMHub с одними и теми же данными или USB-устройствами.
+
+**Данные и обновления:** каталог `./data` расположен рядом с файлом Compose. Сохраняйте его и делайте резервные копии. Пример предназначен для новой установки: не переключайте существующую систему на пустой каталог по ошибке. Обновление выполняется вручную: прочтите примечания к выпуску, сделайте резервную копию, остановите старый экземпляр, замените тег образа нужной версией, затем выполните `docker compose pull` и `docker compose up -d`. Фиксированный тег не переключается на будущие версии автоматически.
+
+**Ошибки загрузки:** `unauthorized` или `denied` могут означать, что образ ещё не доступен публично. Обратитесь в поддержку; пользователям не нужен GitHub-токен издателя. Тайм-аут также может быть вызван сетью или реестром образов.
 
 ### Ответственное использование и важные ограничения
 
