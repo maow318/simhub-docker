@@ -15,7 +15,7 @@ Copy this configuration into your NAS Compose editor, or save it as `compose.yam
 ```yaml
 services:
   simhub:
-    image: ghcr.io/maow318/simhub-docker:0.4.9-secure2
+    image: ghcr.io/maow318/simhub-docker:0.4.9-secure4
     platform: linux/amd64
     pull_policy: missing
     container_name: simhub-nas
@@ -55,11 +55,16 @@ Availability outside mainland China is not universal: local law, applicable sanc
 - Keep your persistent data directory and back it up before updates. Do not expose an unconfigured management interface to the public internet.
 - Confirm hardware and carrier compatibility before relying on any feature. No claim of compatibility with every NAS, SIM, reader or carrier is made.
 
-### Upgrade to 0.4.9-secure2
+### Upgrade to 0.4.9-secure4
 
-**Upgrade before the v2 license-trust cutover.** `0.4.9-secure1` cannot read the new trust format. Production switched to v2 on 8 November 2026. Existing secure1 installations must upgrade to secure2. After cutover, the operator no longer needs to renew the signed public-key list every month; normal online license checks, annual expiry and refund/revocation enforcement remain.
+This release adds a shared line selector to Messages and Phone, prefers a registered line initially, and isolates drafts and history by SIM. Wi-Fi Calling disconnection alerts are sent only after two continuous minutes offline; brief outages and their recovery stay silent. Reconnection attempts are unchanged.
 
-For an existing installation, stop the old instance and back up its data. Keep the same Compose project directory and the exact existing `/data` mount (`./data` in this example); change only the image tag to `0.4.9-secure2`. Then run:
+**Reader limit: at most two USB CCID readers can be active at the same time.** Additional readers wait for a slot. If your current installation uses more than two readers simultaneously, review this limit before upgrading. This update does not delete their configuration.
+
+
+**This release retains v2 license-trust support.** `0.4.9-secure1` cannot read the new trust format. Production switched to v2 on 8 November 2026. Existing secure1 installations must upgrade to secure4. After cutover, the operator no longer needs to renew the signed public-key list every month; normal online license checks, annual expiry and refund/revocation enforcement remain.
+
+For an existing installation, stop the old instance and back up its data. Keep the same Compose project directory and the exact existing `/data` mount (`./data` in this example); change only the image tag to `0.4.9-secure4`. Then run:
 
 ```bash
 docker compose pull
@@ -69,7 +74,7 @@ docker compose pull
 docker compose up -d
 ```
 
-Confirm the application reports `0.4.9-secure2` and the existing license remains active. Do not delete the data directory, use volume-removal options or start a second instance against the same data. Once v2 trust has been accepted, do not downgrade to secure1 or restore an older trust cache.
+Confirm the application reports `0.4.9-secure4` and the existing license remains active. Do not delete the data directory, use volume-removal options or start a second instance against the same data. Once v2 trust has been accepted, do not downgrade to secure1 or restore an older trust cache.
 
 ### Quick installation
 
@@ -121,11 +126,16 @@ SIMHub NAS は、NAS 上の Web インターフェースから対応する SIM�
 - 永続データディレクトリを保持し、更新前にバックアップしてください。初期設定が済んでいない管理画面をインターネットに公開しないでください。
 - 利用前に機器・通信事業者との互換性を確認してください。すべての NAS、SIM、リーダー、通信事業者への対応を保証するものではありません。
 
-### 0.4.9-secure2 への更新
+### 0.4.9-secure4 への更新
 
-**ライセンス信頼リストが v2 に切り替わる前に更新してください。** `0.4.9-secure1` は新形式に対応していません。本番環境は2026年11月8日に v2 へ切り替わりました。既存の secure1 は secure2 へ更新してください。切り替え後は運営者による署名付き公開鍵リストの毎月の更新が不要になりますが、通常のオンライン認証、年額ライセンスの有効期限、返金・取り消しの確認は継続します。
+メッセージと通話で共通の回線切替を追加しました。初期選択では登録済み回線を優先し、下書きと履歴を SIM ごとに分離します。Wi-Fi Calling の切断通知は切断が連続2分間続いた場合のみ送信し、短時間の切断と復旧は通知しません。再接続処理は変更しません。
 
-既存環境では、旧インスタンスを停止してデータをバックアップします。同じ Compose プロジェクトのディレクトリと既存の `/data` マウント先（この例では `./data`）を保持し、イメージタグだけを `0.4.9-secure2` に変更して実行してください。
+**USB CCID リーダーの同時利用は最大2台です。** 追加のリーダーは空きができるまで待機します。現在3台以上を同時利用している場合は、更新前にこの制限をご確認ください。設定は削除しません。
+
+
+**本リリースもライセンス信頼リスト v2 に対応しています。** `0.4.9-secure1` は新形式に対応していません。本番環境は2026年11月8日に v2 へ切り替わりました。既存の secure1 は secure4 へ更新してください。切り替え後は運営者による署名付き公開鍵リストの毎月の更新が不要になりますが、通常のオンライン認証、年額ライセンスの有効期限、返金・取り消しの確認は継続します。
+
+既存環境では、旧インスタンスを停止してデータをバックアップします。同じ Compose プロジェクトのディレクトリと既存の `/data` マウント先（この例では `./data`）を保持し、イメージタグだけを `0.4.9-secure4` に変更して実行してください。
 
 ```bash
 docker compose pull
@@ -135,7 +145,7 @@ docker compose pull
 docker compose up -d
 ```
 
-アプリのバージョンが `0.4.9-secure2` で、既存ライセンスが有効なことを確認してください。データの削除、ボリュームを削除するオプションの使用、同じデータでの二重起動は避けてください。v2 を受け入れた後は secure1 へのダウングレードや古い信頼キャッシュの復元をしないでください。
+アプリのバージョンが `0.4.9-secure4` で、既存ライセンスが有効なことを確認してください。データの削除、ボリュームを削除するオプションの使用、同じデータでの二重起動は避けてください。v2 を受け入れた後は secure1 へのダウングレードや古い信頼キャッシュの復元をしないでください。
 
 ### 簡単なインストール手順
 
@@ -187,11 +197,16 @@ SIMHub NAS — программное обеспечение для самост
 - Сохраняйте каталог постоянных данных и создавайте резервную копию перед обновлением. Не открывайте доступ к ненастроенному интерфейсу управления из интернета.
 - Перед использованием убедитесь в совместимости оборудования и оператора. Совместимость со всеми NAS, SIM-картами, считывателями и операторами не гарантируется.
 
-### Обновление до 0.4.9-secure2
+### Обновление до 0.4.9-secure4
 
-**Обновите программу до перехода на список доверенных ключей v2.** Версия `0.4.9-secure1` не поддерживает новый формат. Рабочий сервер перешёл на v2 8 ноября 2026 года. Существующие установки secure1 необходимо обновить до secure2. После перехода оператору больше не потребуется ежемесячно продлевать подписанный список открытых ключей; обычные онлайн-проверки лицензий, срок годовой лицензии и проверки возвратов и отзыва сохраняются.
+Добавлен общий переключатель линий для сообщений и звонков. При первом открытии приоритет получает зарегистрированная линия; черновики и история разделены по SIM. Уведомление об отключении Wi-Fi Calling отправляется только после двух минут непрерывного отсутствия соединения. Краткие отключения и восстановление после них не вызывают уведомлений. Алгоритм переподключения не изменён.
 
-При обновлении существующей установки остановите старый экземпляр и создайте резервную копию данных. Сохраните прежний каталог проекта Compose и точное подключение существующего каталога `/data` (в этом примере — `./data`); измените только тег образа на `0.4.9-secure2`. Затем выполните:
+**Одновременно могут работать не более двух USB CCID-считывателей.** Остальные ожидают свободного места. Если сейчас используются более двух считывателей одновременно, учтите это ограничение перед обновлением. Их настройки не удаляются.
+
+
+**Этот выпуск сохраняет поддержку списка доверенных ключей v2.** Версия `0.4.9-secure1` не поддерживает новый формат. Рабочий сервер перешёл на v2 8 ноября 2026 года. Существующие установки secure1 необходимо обновить до secure4. После перехода оператору больше не потребуется ежемесячно продлевать подписанный список открытых ключей; обычные онлайн-проверки лицензий, срок годовой лицензии и проверки возвратов и отзыва сохраняются.
+
+При обновлении существующей установки остановите старый экземпляр и создайте резервную копию данных. Сохраните прежний каталог проекта Compose и точное подключение существующего каталога `/data` (в этом примере — `./data`); измените только тег образа на `0.4.9-secure4`. Затем выполните:
 
 ```bash
 docker compose pull
@@ -201,7 +216,7 @@ docker compose pull
 docker compose up -d
 ```
 
-Убедитесь, что приложение показывает версию `0.4.9-secure2`, а существующая лицензия остаётся активной. Не удаляйте данные, не используйте параметры удаления томов и не запускайте второй экземпляр с теми же данными. После принятия списка v2 не возвращайтесь к secure1 и не восстанавливайте старый кэш доверенных ключей.
+Убедитесь, что приложение показывает версию `0.4.9-secure4`, а существующая лицензия остаётся активной. Не удаляйте данные, не используйте параметры удаления томов и не запускайте второй экземпляр с теми же данными. После принятия списка v2 не возвращайтесь к secure1 и не восстанавливайте старый кэш доверенных ключей.
 
 ### Быстрая установка
 
