@@ -15,8 +15,7 @@ Copy this configuration into your NAS Compose editor, or save it as `compose.yam
 ```yaml
 services:
   simhub:
-    image: ghcr.io/maow318/simhub-docker:0.4.9-secure4
-    platform: linux/amd64
+    image: ghcr.io/maow318/simhub-docker:1.1.2
     pull_policy: missing
     container_name: simhub-nas
     restart: unless-stopped
@@ -30,7 +29,7 @@ services:
       TZ: "${TZ:-UTC}"
 ```
 
-Linux amd64 only. / Linux amd64 のみ。 / Только Linux amd64.
+Linux amd64 and arm64; Docker selects the matching architecture automatically. / Linux amd64・arm64 対応。Docker が適切なアーキテクチャを自動選択します。 / Linux amd64 и arm64; Docker автоматически выбирает подходящую архитектуру.
 
 ---
 
@@ -50,21 +49,29 @@ Availability outside mainland China is not universal: local law, applicable sanc
 
 ### Deployment and licensing
 
-- This image targets **Linux x86-64 / amd64** NAS systems with Docker; it is not an ARM image.
+- This image supports **Linux x86-64 / amd64 and arm64** systems with Docker, and Docker selects the matching architecture automatically. 32-bit ARM is not supported.
 - A valid SIMHub license and an internet connection are required for activation and periodic license validation. A lifetime license does **not** mean permanently offline operation; its scope is defined in the official terms.
 - Keep your persistent data directory and back it up before updates. Do not expose an unconfigured management interface to the public internet.
 - Confirm hardware and carrier compatibility before relying on any feature. No claim of compatibility with every NAS, SIM, reader or carrier is made.
 
-### Upgrade to 0.4.9-secure4
+### Upgrade to 1.1.2
 
-This release adds a shared line selector to Messages and Phone, prefers a registered line initially, and isolates drafts and history by SIM. Wi-Fi Calling disconnection alerts are sent only after two continuous minutes offline; brief outages and their recovery stay silent. Reconnection attempts are unchanged.
+This release is an **attempted fix for AT&T Wi-Fi Calling failing to come up** (AT&T and AT&T-network MVNOs such as Red Pocket GSMA). It replaces 1.1.1, which has been withdrawn.
+
+- **New in 1.1.2 — AT&T registration over TCP:** in a real-card test of 1.1.1, ISIM authentication and IMS IPsec succeeded, but the second REGISTER (about 1.9 KB) never got a reply because it was split into IP fragments over UDP. For AT&T it now goes over **TCP inside IMS IPsec**, without fragmentation. On a 480 ("registration still in progress") SIMHub waits 32 seconds and retries once.
+- **AT&T Wi-Fi Calling:** IMS authentication runs on the card's **ISIM** over its own logical channel (card readers and modems); previously the card returned SW 9862.
+- **AT&T IMS registration:** REGISTER and IMS IPsec follow AT&T's requirements (AT&T identity domains, hmac-sha-1-96 + aes-cbc only, protected port 6000, AT&T Contact / header format).
+- Red Pocket SIMs recognised by SPN or GID1; clearer error when the card rejects IMS authentication.
+- No changes for other carriers. Activation-code support and +86 call/SMS blocking are retained.
+
+**Not yet verified with a real AT&T card.** The line needs Wi-Fi Calling enabled with a registered E911 address, and VoWiFi traffic should leave from a US IP.
 
 **Reader limit: at most two USB CCID readers can be active at the same time.** Additional readers wait for a slot. If your current installation uses more than two readers simultaneously, review this limit before upgrading. This update does not delete their configuration.
 
 
-**This release retains v2 license-trust support.** `0.4.9-secure1` cannot read the new trust format. Production switched to v2 on 8 November 2026. Existing secure1 installations must upgrade to secure4. After cutover, the operator no longer needs to renew the signed public-key list every month; normal online license checks, annual expiry and refund/revocation enforcement remain.
+**This release retains v2 license-trust support.** `0.4.9-secure1` cannot read the new trust format. Production switched to v2 on 8 November 2026. Existing secure1 installations must upgrade to 1.1.2. After cutover, the operator no longer needs to renew the signed public-key list every month; normal online license checks, annual expiry and refund/revocation enforcement remain.
 
-For an existing installation, stop the old instance and back up its data. Keep the same Compose project directory and the exact existing `/data` mount (`./data` in this example); change only the image tag to `0.4.9-secure4`. Then run:
+For an existing installation, stop the old instance and back up its data. Keep the same Compose project directory and the exact existing `/data` mount (`./data` in this example); change only the image tag to `1.1.2`. Then run:
 
 ```bash
 docker compose pull
@@ -74,7 +81,7 @@ docker compose pull
 docker compose up -d
 ```
 
-Confirm the application reports `0.4.9-secure4` and the existing license remains active. Do not delete the data directory, use volume-removal options or start a second instance against the same data. Once v2 trust has been accepted, do not downgrade to secure1 or restore an older trust cache.
+Confirm the application reports `1.1.2` and the existing license remains active. Do not delete the data directory, use volume-removal options or start a second instance against the same data. Once v2 trust has been accepted, do not downgrade to secure1 or restore an older trust cache.
 
 ### Quick installation
 
@@ -121,21 +128,29 @@ SIMHub NAS は、NAS 上の Web インターフェースから対応する SIM�
 
 ### 導入とライセンス
 
-- 本イメージは Docker を利用できる **Linux x86-64／amd64** NAS 向けです。ARM 版ではありません。
+- 本イメージは Docker を利用できる **Linux x86-64／amd64 および arm64** に対応しており、Docker が適切なアーキテクチャを自動選択します。32 ビット ARM には対応していません。
 - 有効な SIMHub ライセンスが必要です。初回認証および定期的なライセンス確認にはインターネット接続が必要です。永久ライセンスは、永久にオフラインで利用できることを意味しません。適用範囲は公式利用規約に定められます。
 - 永続データディレクトリを保持し、更新前にバックアップしてください。初期設定が済んでいない管理画面をインターネットに公開しないでください。
 - 利用前に機器・通信事業者との互換性を確認してください。すべての NAS、SIM、リーダー、通信事業者への対応を保証するものではありません。
 
-### 0.4.9-secure4 への更新
+### 1.1.2 への更新
 
-メッセージと通話で共通の回線切替を追加しました。初期選択では登録済み回線を優先し、下書きと履歴を SIM ごとに分離します。Wi-Fi Calling の切断通知は切断が連続2分間続いた場合のみ送信し、短時間の切断と復旧は通知しません。再接続処理は変更しません。
+本リリースは **AT&T の Wi-Fi Calling が接続できない問題の修正を試みたもの**です（AT&T および Red Pocket GSMA など AT&T 網の MVNO）。1.1.1 は取り下げ、本リリースに置き換えました。
+
+- **1.1.2 の新機能 — AT&T の登録を TCP で送信：** 1.1.1 の実カード試験では ISIM 認証と IMS IPsec は成功したものの、2 回目の REGISTER（約 1.9 KB）が UDP で IP フラグメントに分割され、応答がありませんでした。AT&T では **IMS IPsec 内の TCP** で送るよう変更し、分割されなくなりました。480（前回の登録がまだ処理中）の場合は 32 秒待って 1 回再試行します。
+- **AT&T Wi-Fi Calling：** IMS 認証をカードの **ISIM** で、専用の論理チャネル経由で行います（カードリーダー・モデムとも）。以前はカードが SW 9862 を返していました。
+- **AT&T IMS 登録：** REGISTER と IMS IPsec を AT&T の要件に合わせました（AT&T 識別ドメイン、hmac-sha-1-96 + aes-cbc のみ、保護ポート 6000、AT&T 形式の Contact / ヘッダー）。
+- SPN または GID1 で Red Pocket SIM を判定。カードが IMS 認証を拒否した場合のエラー表示を改善。
+- 他のキャリアへの変更はありません。アクティベーションコード対応と +86 宛て通話・SMS のブロックは維持。
+
+**AT&T 実カードでは未検証です。** 回線で Wi-Fi Calling と E911 住所の登録が必要で、VoWiFi の通信は米国 IP から出してください。
 
 **USB CCID リーダーの同時利用は最大2台です。** 追加のリーダーは空きができるまで待機します。現在3台以上を同時利用している場合は、更新前にこの制限をご確認ください。設定は削除しません。
 
 
-**本リリースもライセンス信頼リスト v2 に対応しています。** `0.4.9-secure1` は新形式に対応していません。本番環境は2026年11月8日に v2 へ切り替わりました。既存の secure1 は secure4 へ更新してください。切り替え後は運営者による署名付き公開鍵リストの毎月の更新が不要になりますが、通常のオンライン認証、年額ライセンスの有効期限、返金・取り消しの確認は継続します。
+**本リリースもライセンス信頼リスト v2 に対応しています。** `0.4.9-secure1` は新形式に対応していません。本番環境は2026年11月8日に v2 へ切り替わりました。既存の secure1 は 1.1.2 へ更新してください。切り替え後は運営者による署名付き公開鍵リストの毎月の更新が不要になりますが、通常のオンライン認証、年額ライセンスの有効期限、返金・取り消しの確認は継続します。
 
-既存環境では、旧インスタンスを停止してデータをバックアップします。同じ Compose プロジェクトのディレクトリと既存の `/data` マウント先（この例では `./data`）を保持し、イメージタグだけを `0.4.9-secure4` に変更して実行してください。
+既存環境では、旧インスタンスを停止してデータをバックアップします。同じ Compose プロジェクトのディレクトリと既存の `/data` マウント先（この例では `./data`）を保持し、イメージタグだけを `1.1.2` に変更して実行してください。
 
 ```bash
 docker compose pull
@@ -145,7 +160,7 @@ docker compose pull
 docker compose up -d
 ```
 
-アプリのバージョンが `0.4.9-secure4` で、既存ライセンスが有効なことを確認してください。データの削除、ボリュームを削除するオプションの使用、同じデータでの二重起動は避けてください。v2 を受け入れた後は secure1 へのダウングレードや古い信頼キャッシュの復元をしないでください。
+アプリのバージョンが `1.1.2` で、既存ライセンスが有効なことを確認してください。データの削除、ボリュームを削除するオプションの使用、同じデータでの二重起動は避けてください。v2 を受け入れた後は secure1 へのダウングレードや古い信頼キャッシュの復元をしないでください。
 
 ### 簡単なインストール手順
 
@@ -192,21 +207,29 @@ SIMHub NAS — программное обеспечение для самост
 
 ### Развёртывание и лицензирование
 
-- Образ предназначен для NAS на **Linux x86-64 / amd64** с Docker; это не версия для ARM.
+- Образ поддерживает системы **Linux x86-64 / amd64 и arm64** с Docker; Docker автоматически выбирает подходящую архитектуру. 32-битный ARM не поддерживается.
 - Требуется действующая лицензия SIMHub. Для активации и периодической проверки лицензии необходимо подключение к интернету. Бессрочная лицензия **не** означает бессрочную автономную работу; её условия определяются официальными условиями использования.
 - Сохраняйте каталог постоянных данных и создавайте резервную копию перед обновлением. Не открывайте доступ к ненастроенному интерфейсу управления из интернета.
 - Перед использованием убедитесь в совместимости оборудования и оператора. Совместимость со всеми NAS, SIM-картами, считывателями и операторами не гарантируется.
 
-### Обновление до 0.4.9-secure4
+### Обновление до 1.1.2
 
-Добавлен общий переключатель линий для сообщений и звонков. При первом открытии приоритет получает зарегистрированная линия; черновики и история разделены по SIM. Уведомление об отключении Wi-Fi Calling отправляется только после двух минут непрерывного отсутствия соединения. Краткие отключения и восстановление после них не вызывают уведомлений. Алгоритм переподключения не изменён.
+Этот выпуск — **попытка исправить неработающий Wi-Fi Calling у AT&T** (AT&T и MVNO в сети AT&T, например Red Pocket GSMA). Он заменяет отозванный выпуск 1.1.1.
+
+- **Новое в 1.1.2 — регистрация AT&T по TCP:** при проверке 1.1.1 на реальной карте аутентификация ISIM и IMS IPsec прошли, но на второй REGISTER (около 1,9 КБ) ответа не было — по UDP он делился на IP-фрагменты. Для AT&T он теперь идёт по **TCP внутри IMS IPsec** без фрагментации. При ответе 480 (предыдущая регистрация ещё не завершена) SIMHub ждёт 32 секунды и повторяет попытку один раз.
+- **AT&T Wi-Fi Calling:** IMS-аутентификация выполняется на **ISIM** карты через отдельный логический канал (считыватели и модемы); раньше карта возвращала SW 9862.
+- **Регистрация IMS у AT&T:** REGISTER и IMS IPsec приведены к требованиям AT&T (домены AT&T, только hmac-sha-1-96 + aes-cbc, защищённый порт 6000, формат Contact / заголовков AT&T).
+- Red Pocket определяется по SPN или GID1; понятная ошибка, если карта отклоняет IMS-аутентификацию.
+- Для других операторов изменений нет. Коды активации и блокировка звонков/SMS на +86 сохранены.
+
+**На реальной карте AT&T ещё не проверено.** На линии нужен включённый Wi-Fi Calling с адресом E911, трафик VoWiFi должен выходить с IP США.
 
 **Одновременно могут работать не более двух USB CCID-считывателей.** Остальные ожидают свободного места. Если сейчас используются более двух считывателей одновременно, учтите это ограничение перед обновлением. Их настройки не удаляются.
 
 
-**Этот выпуск сохраняет поддержку списка доверенных ключей v2.** Версия `0.4.9-secure1` не поддерживает новый формат. Рабочий сервер перешёл на v2 8 ноября 2026 года. Существующие установки secure1 необходимо обновить до secure4. После перехода оператору больше не потребуется ежемесячно продлевать подписанный список открытых ключей; обычные онлайн-проверки лицензий, срок годовой лицензии и проверки возвратов и отзыва сохраняются.
+**Этот выпуск сохраняет поддержку списка доверенных ключей v2.** Версия `0.4.9-secure1` не поддерживает новый формат. Рабочий сервер перешёл на v2 8 ноября 2026 года. Существующие установки secure1 необходимо обновить до 1.1.2. После перехода оператору больше не потребуется ежемесячно продлевать подписанный список открытых ключей; обычные онлайн-проверки лицензий, срок годовой лицензии и проверки возвратов и отзыва сохраняются.
 
-При обновлении существующей установки остановите старый экземпляр и создайте резервную копию данных. Сохраните прежний каталог проекта Compose и точное подключение существующего каталога `/data` (в этом примере — `./data`); измените только тег образа на `0.4.9-secure4`. Затем выполните:
+При обновлении существующей установки остановите старый экземпляр и создайте резервную копию данных. Сохраните прежний каталог проекта Compose и точное подключение существующего каталога `/data` (в этом примере — `./data`); измените только тег образа на `1.1.2`. Затем выполните:
 
 ```bash
 docker compose pull
@@ -216,7 +239,7 @@ docker compose pull
 docker compose up -d
 ```
 
-Убедитесь, что приложение показывает версию `0.4.9-secure4`, а существующая лицензия остаётся активной. Не удаляйте данные, не используйте параметры удаления томов и не запускайте второй экземпляр с теми же данными. После принятия списка v2 не возвращайтесь к secure1 и не восстанавливайте старый кэш доверенных ключей.
+Убедитесь, что приложение показывает версию `1.1.2`, а существующая лицензия остаётся активной. Не удаляйте данные, не используйте параметры удаления томов и не запускайте второй экземпляр с теми же данными. После принятия списка v2 не возвращайтесь к secure1 и не восстанавливайте старый кэш доверенных ключей.
 
 ### Быстрая установка
 
